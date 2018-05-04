@@ -16,9 +16,9 @@
 
 <script>
 import list from './data.js'
-import init from '../../core/infinite.js'
+import Infinite from '../../core/infinite.js'
 
-const infiniteFactor = init
+const infiniteFactor = Infinite
 
 const idDom = 'infinite-scroll-wrapper'
 
