@@ -4,10 +4,10 @@
   <div>
     <h2>{{msg}}</h2>
   </div>
-
+<div>{{buffer}}</div>
   <div class="scroll-wrapper" id="infinite-scroll-wrapper">
-    <div v-for="(elem,ielem) in list">
-      elem : {{elem.name}}
+    <div v-for="(elem,ielem) in buffer">
+      {{ielem}} elem : {{elem.name}}
     </div>
   </div>
 
@@ -28,30 +28,34 @@ export default {
     return {
       list,
       msg: 'Infinite Scroll',
-      scroll:null,
-      counter:0,
-      idDom
+      idDom,
+      buffer: [],
+      infinite: null
     }
   },
   methods: {
-    onScroll(perc){
-      this.counter++
-      console.log('scroll '+ (parseInt( perc * 100)/100) , this.counter)
+    onScroll(perc, buffer) {
+       this.buffer=buffer;
+       this.buffer = this.buffer.splice(0, this.buffer.length)
+      console.log('scroll ' + (parseInt(perc * 100) / 100))
     }
   },
-  mounted(){
-    const infinite = infiniteFactor({idDOm:this.idDom, onScroll :this.onScroll})
-    console.log('mouted ')
+  mounted() {
+    this.infinite = infiniteFactor({
+      idDom: this.idDom,
+      onScroll: this.onScroll,
+      buffer: this.buffer
+    })
+    this.buffer = this.infinite.refresh(this.list)
+    console.log('mounted ')
   },
-computed: {
-  test: () => 'ok'
-},
-// methods: { ...methods },
-created() {
-  console.log('[component infinite] create',window)
-
-}
-
+  computed: {
+    test: () => 'ok'
+  },
+  // methods: { ...methods },
+  created() {
+    console.log('[component infinite] create', window)
+  }
 }
 </script>
 
@@ -61,11 +65,12 @@ created() {
   background-color: black;
   color: yellow;
   padding-top: 11px;
+  height: 100%;
 }
 
 .scroll-wrapper {
   overflow-y: auto;
-  height: 500px;
+  height: 400px;
   width: 300px;
 }
 

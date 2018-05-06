@@ -18,44 +18,60 @@ const precPage  = iPag => numberNotMinOf(iPag, 0)
 const iPageToListIndex = (iPag, len) => iPag * len
 const listIndexToiPag = (iList, len) => numOfPage(iList, len)
 
-function getList(list, start, lenBuffer) {
-  const lenList = list.length;
-  if (!lenList){
-    return null
-  }
-
-  const iStart = numberNotMinOf( calcStart( lenList -1, start) - lenBuffer, 0 )
-  const currentPag = listIndexToiPag(iStartMax,lenBuffer) // trova la pagina per quel indice
-  const iNumOfPageMax = numOfPage(lenList, lenBuffer)
-
-// elimino i primi lenBuffer / 2
-// aggiungo lenBuffer / 2
-
-  const buffer = list.splice(iStart, lenBuffer)
-
-  return {iStart, currentPag, iNumOfPageMax}
-}
-
-console.log(' test infinitejs calcStart', calcStart([1,2,3,4,5], 8));
+console.log(' test infinitejs calcStart', calcStart([1,2,3,4,5], 8))
 
 function Infinite(options){
 
-  let iStart=0, currentPag=0, iNumOfPageMax=0
-  const scroller = init(options)
+  let iStart=0, currentPag=0, iNumOfPageMax=0, list=[]
+  const externalOnScroll = options.onScroll
 
-  const refresh = list =>{
-    iStart = getList(list, iStart, scroller.bufferLen)
+  options.onScroll = (perc, firstVisible, firstHide) =>{
+      console.log('internal scroll and cell visible', perc, firstVisible, firstHide)
+      moveNext(perc>0 ? 1 : -1)
+      externalOnScroll(perc, options.buffer)
+  }
+
+const scroller = init(options)
+
+  function getList(list, lenBuffer) {
+    const lenList = list.length
+    if (!lenList){
+      return []
+    }
+
+     iStart = numberNotMinOf( calcStart( lenList -1, iStart) - lenBuffer, 0 )
+     options.buffer = list.splice(iStart, lenBuffer)
   }
 
 
+  const refresh = newList =>{
+      list = newList
+      getList(newList, scroller.bufferLen)
+     return options.buffer
+  }
+
+   options.buffer =  list.splice(iStart, scroller.bufferLen)
+
+
+  const moveNext = dir =>{
+      const half = parseInt(scroller.bufferLen / 2)
+      iStart = iStart + 5 // (5 * dir) // half * dir
+      const lenList = list.length
+      iStart = NumberIntoMaxMin(iStart, scroller.bufferLen - 5, 0)
+      options.buffer = list.splice(iStart, scroller.bufferLen)
+
+      console.log('infinite move next dir=', dir)
+      return options.buffer
   }
 
   return {
     scroller,
     refresh,
-    moveNext
+    moveNext,
+    list
   }
 }
+
 export default Infinite
 
 /* test qui */
